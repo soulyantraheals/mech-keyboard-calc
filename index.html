@@ -48,7 +48,7 @@
             <h2 class="text-xl font-bold text-cyan-400 mb-6 font-['Orbitron'] uppercase">Keyboard Themes</h2>
             <button onclick="applyTheme('dark')" class="w-full mb-3 p-3 bg-gray-800 rounded-xl">Dark Mode (Free)</button>
             <button id="premiumBtn" onclick="checkPremium()" class="w-full p-3 bg-white text-black font-bold rounded-xl opacity-50">White Hybrid (LOCKED)</button>
-            <a id="payLink" href="https://rzp.io/rzp/kd2NGSTq" target="_blank" class="block mt-4 text-xs text-yellow-500 font-bold underline">Pay $1.00 to Unlock</a>
+            <a id="payLink" href="https://rzp.io/rzp/UJNDMxC" target="_blank" class="block mt-4 text-xs text-yellow-500 font-bold underline">Pay $1.00 to Unlock</a>
             <button onclick="toggleModal()" class="mt-6 text-gray-400 text-sm">Close</button>
         </div>
     </div>
@@ -56,6 +56,7 @@
     <script>
         let isMuted = false;
         let isLoggedIn = false;
+        const PAYMENT_URL = "https://rzp.io/rzp/UJNDMxC";
 
         // --- 🎧 MECHANICAL SOUND ENGINE ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -73,9 +74,7 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        // --- 🔐 LOGIN & IDENTITY LOGIC ---
         function handleLogin() {
-            // This is a placeholder for Google OAuth setup
             isLoggedIn = true;
             document.getElementById('loginBtn').innerText = "👤 LOGGED IN";
             document.getElementById('loginBtn').classList.replace('bg-white', 'bg-green-600');
@@ -92,7 +91,6 @@
             }
         }
 
-        // --- 🔢 CALCULATOR LOGIC ---
         const keys = ['C', '÷', '×', '⌫', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'];
         const grid = document.getElementById('key-grid');
         let expr = "";
@@ -114,7 +112,6 @@
                 catch { expr = "Error"; }
             } else expr += k;
             res.innerText = expr || "0";
-            // FIX: Dynamic Resize
             res.style.fontSize = res.innerText.length > 9 ? "1.2rem" : "1.875rem";
         }
 
@@ -128,11 +125,11 @@
             } else if (!isLoggedIn) {
                 alert("Please LOGIN first to identify your account!");
             } else {
-                window.open("https://rzp.io/rzp/kd2NGSTq", "_blank");
+                // UPDATED JS REDIRECT
+                window.open(PAYMENT_URL, "_blank");
             }
         }
 
-        // Identify payment success from Razorpay
         if (window.location.search.includes('status=success')) {
             localStorage.setItem('isPremiumUser', 'true');
             window.history.replaceState({}, document.title, window.location.pathname);
