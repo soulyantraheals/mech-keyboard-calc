@@ -9,12 +9,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root { --main-bg: #050505; --key-bg: #1a1a2e; --accent: #00ffff; }
-        body { background-color: #000; font-family: 'Rajdhani', sans-serif; color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: screen; }
+        body { background-color: #000; font-family: 'Rajdhani', sans-serif; color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
         
         /* RGB Outer Glow - Controlled by Toggle */
         .rgb-frame {
             padding: 4px; border-radius: 2.6rem; transition: all 0.5s;
-            background: #111; /* Default off */
+            background: #111; /* Default state when off */
         }
         .rgb-active {
             background: linear-gradient(var(--angle), #ff0000, #00ff00, #0000ff, #ff00ff, #ff0000);
@@ -33,6 +33,7 @@
         .rgb-active .key-rgb { animation: keyPulse 2s infinite alternate; }
         @keyframes keyPulse { from { border-color: #00ffff; } to { border-color: #ff00ff; } }
 
+        /* Fixed display size to prevent stretching */
         .display { 
             background: #000; height: 110px; border-radius: 1.5rem; margin-bottom: 2rem;
             display: flex; flex-direction: column; justify-content: center;
@@ -71,38 +72,43 @@
             <h2 class="text-xl font-bold text-cyan-400 mb-6 font-['Orbitron']">SETTINGS</h2>
             
             <div class="mb-6 flex flex-col items-center">
-                <p class="text-[10px] text-gray-500 mb-2 uppercase">Sync Settings</p>
-                <div id="g_id_onload" data-client_id="YOUR_ID.apps.googleusercontent.com" data-callback="handleLogin"></div>
+                <p class="text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Sync Your Themes</p>
+                <div id="g_id_onload" 
+                     data-client_id="YOUR_CLIENT_ID_HERE.apps.googleusercontent.com" 
+                     data-callback="handleLogin">
+                </div>
                 <div class="g_id_signin" data-type="standard"></div>
             </div>
 
-            <div class="space-y-4 mb-6">
+            <div class="space-y-4 mb-6 text-left">
                 <div>
-                    <label class="text-[10px] text-gray-400 block mb-1">RGB LIGHTING</label>
-                    <button id="rgbToggle" onclick="toggleRGB()" class="w-full bg-green-900/30 text-green-400 p-2 rounded border border-green-700 text-xs">EFFECT: ON</button>
+                    <label class="text-[10px] text-gray-400 block mb-1 uppercase">Chassis Lighting</label>
+                    <button id="rgbToggle" onclick="toggleRGB()" class="w-full bg-green-900/30 text-green-400 p-2 rounded border border-green-700 text-xs font-bold">RGB EFFECT: ON</button>
                 </div>
+
                 <div>
-                    <label class="text-[10px] text-gray-400 block mb-1">KEYBOARD THEME</label>
-                    <select id="themeSelect" class="w-full bg-black border border-gray-700 p-2 rounded text-xs">
+                    <label class="text-[10px] text-gray-400 block mb-1 uppercase">Keyboard Theme</label>
+                    <select id="themeSelect" class="w-full bg-black border border-gray-700 p-2 rounded text-xs text-white">
                         <option value="black">Mechanical Black (Free)</option>
                         <option value="indigo">Indigo Blue (Free)</option>
                         <option value="white">White Hybrid (Premium)</option>
                         <option value="pink">Pink Gradient (Premium)</option>
                     </select>
                 </div>
+
                 <div>
-                    <label class="text-[10px] text-gray-400 block mb-1">SOUND PROFILE</label>
-                    <select id="soundSelect" class="w-full bg-black border border-gray-700 p-2 rounded text-xs">
+                    <label class="text-[10px] text-gray-400 block mb-1 uppercase">Sound Profile</label>
+                    <select id="soundSelect" class="w-full bg-black border border-gray-700 p-2 rounded text-xs text-white">
                         <option value="blue">Blue Switch (Clicky)</option>
                         <option value="brown">Brown Switch (Tactile)</option>
                         <option value="creamy">Creamy Linear (Premium)</option>
-                        <option value="type">Typewriter (Premium)</option>
+                        <option value="type">Retro Typewriter (Premium)</option>
                     </select>
                 </div>
             </div>
 
-            <button onclick="applyChanges()" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl">APPLY & SAVE</button>
-            <button onclick="toggleModal()" class="mt-4 text-gray-500 text-xs">Close</button>
+            <button onclick="applyChanges()" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-500 transition-colors">APPLY & SAVE</button>
+            <button onclick="toggleModal()" class="mt-4 text-gray-500 text-xs hover:text-white">Close</button>
         </div>
     </div>
 
@@ -131,6 +137,8 @@
 
         function playSound() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
             const type = document.getElementById('soundSelect').value;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -153,12 +161,12 @@
             const btn = document.getElementById('rgbToggle');
             if(rgbOn) {
                 frame.classList.add('rgb-active');
-                btn.innerText = "EFFECT: ON";
-                btn.className = "w-full bg-green-900/30 text-green-400 p-2 rounded border border-green-700 text-xs";
+                btn.innerText = "RGB EFFECT: ON";
+                btn.className = "w-full bg-green-900/30 text-green-400 p-2 rounded border border-green-700 text-xs font-bold";
             } else {
                 frame.classList.remove('rgb-active');
-                btn.innerText = "EFFECT: OFF";
-                btn.className = "w-full bg-red-900/30 text-red-400 p-2 rounded border border-red-700 text-xs";
+                btn.innerText = "RGB EFFECT: OFF";
+                btn.className = "w-full bg-red-900/30 text-red-400 p-2 rounded border border-red-700 text-xs font-bold";
             }
         }
 
@@ -167,7 +175,7 @@
             const isPremium = localStorage.getItem('isPremiumUser') === 'true';
 
             if ((theme === 'white' || theme === 'pink') && !isPremium) {
-                alert("Premium theme! Redirecting...");
+                alert("Premium theme! Redirecting to payment...");
                 window.open("https://rzp.io/rzp/UJNDMxC", "_blank");
                 return;
             }
@@ -175,6 +183,7 @@
             if (theme === 'black') { document.documentElement.style.setProperty('--main-bg', '#050505'); document.documentElement.style.setProperty('--key-bg', '#1a1a2e'); document.documentElement.style.setProperty('--accent', '#00ffff'); }
             if (theme === 'indigo') { document.documentElement.style.setProperty('--main-bg', '#0a0a20'); document.documentElement.style.setProperty('--key-bg', '#312e81'); document.documentElement.style.setProperty('--accent', '#818cf8'); }
             if (theme === 'white') { document.documentElement.style.setProperty('--main-bg', '#f3f4f6'); document.documentElement.style.setProperty('--key-bg', '#ffffff'); document.documentElement.style.setProperty('--accent', '#111827'); }
+            if (theme === 'pink') { document.documentElement.style.setProperty('--main-bg', '#fdf2f8'); document.documentElement.style.setProperty('--key-bg', '#fbcfe8'); document.documentElement.style.setProperty('--accent', '#9d174d'); }
             
             localStorage.setItem('savedTheme', theme);
             localStorage.setItem('savedSound', document.getElementById('soundSelect').value);
@@ -196,9 +205,11 @@
 
         function toggleModal() { document.getElementById('themeModal').classList.toggle('active'); }
         function handleLogin(res) { console.log("User Logged In"); alert("Account Linked!"); }
+        
         function loadSettings() {
             const t = localStorage.getItem('savedTheme') || 'black';
             document.getElementById('themeSelect').value = t;
+            document.getElementById('soundSelect').value = localStorage.getItem('savedSound') || 'blue';
             applyChanges();
         }
     </script>
