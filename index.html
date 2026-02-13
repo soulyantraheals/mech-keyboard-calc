@@ -3,104 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mechanical Calculator Pro</title>
+    <title>Hydra 10 Mech-Calc Pro</title>
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-primary: #1a1a2e; --key-text: #00ffff; }
+        :root { --bg-primary: #0f0f1a; --key-text: #00ffff; --rgb-speed: 3s; }
         body { background-color: #050505; font-family: 'Rajdhani', sans-serif; color: white; overflow: hidden; }
-        .calculator-body { background: #161625; border: 2px solid #2a2a4a; box-shadow: 0 0 30px rgba(0,255,255,0.1); }
-        .display { 
-            background: #0a0a15; border: 2px solid #2a2a4a; 
-            word-break: break-all; overflow: hidden; 
-            display: flex; flex-direction: column; justify-content: flex-end;
-            min-height: 100px; padding: 1.5rem;
+        
+        /* Moving RGB Border Animation */
+        .rgb-border {
+            position: relative; border-radius: 2.5rem; padding: 3px;
+            background: linear-gradient(var(--rgb-angle), #ff0000, #00ff00, #0000ff, #ff00ff, #ff0000);
+            animation: rotateRGB var(--rgb-speed) linear infinite;
         }
-        .key { background: #2d2d4a; border-bottom: 4px solid #000; color: var(--key-text); transition: all 0.05s; }
+        @property --rgb-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+        @keyframes rotateRGB { to { --rgb-angle: 360deg; } }
+
+        .calculator-body { background: #0a0a0f; border-radius: 2.4rem; padding: 1.5rem; width: 100%; max-width: 360px; }
+        
+        .display { 
+            background: #000; border: 1px solid #1a1a2e; word-break: break-all; 
+            min-height: 100px; display: flex; flex-direction: column; justify-content: flex-end;
+            box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.1);
+        }
+
+        .key { 
+            background: #1a1a2e; border-bottom: 4px solid #000; color: var(--key-text); 
+            transition: all 0.05s; text-shadow: 0 0 5px var(--key-text);
+        }
         .key:active { transform: translateY(3px); border-bottom-width: 1px; }
+
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
+
+        /* RGB Light Glow for Free Tier */
+        .free-rgb { box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
-    <div class="bg-gray-900 border-2 border-cyan-900 rounded-[2.5rem] p-6 w-full max-w-sm">
-        <div class="flex justify-between items-center mb-6">
-            <span class="text-[10px] text-cyan-500 font-bold tracking-widest uppercase">Mech-Calc Pro</span>
-            <div class="flex gap-1">
-                <button id="loginBtn" onclick="handleLogin()" class="bg-white text-black text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1 hover:bg-gray-200">
-                    <img src="https://www.google.com/favicon.ico" class="w-2 h-2"> LOGIN
-                </button>
-                <button id="muteBtn" onclick="toggleMute()" class="bg-gray-800 text-[9px] px-2 py-1 rounded-full border border-gray-600">🔊 ON</button>
-                <button onclick="toggleModal()" class="bg-cyan-950 text-cyan-400 text-[9px] px-2 py-1 rounded-full border border-cyan-700">🎨 THEMES</button>
+    <div class="rgb-border">
+        <div class="calculator-body">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-[9px] text-cyan-400 font-bold tracking-[0.3em]">HYDRA-10 MECH</span>
+                <div class="flex gap-1">
+                    <button id="loginBtn" onclick="handleLogin()" class="bg-white text-black text-[8px] px-2 py-1 rounded-full font-bold">LOGIN</button>
+                    <button id="muteBtn" onclick="toggleMute()" class="bg-gray-800 text-[8px] px-2 py-1 rounded-full">🔊 ON</button>
+                    <button onclick="toggleModal()" class="bg-cyan-950 text-cyan-400 text-[8px] px-2 py-1 rounded-full border border-cyan-700">🎨 THEMES</button>
+                </div>
             </div>
-        </div>
 
-        <div class="display rounded-3xl text-right">
-            <div id="res" class="text-cyan-400 text-3xl font-bold font-['Orbitron']">0</div>
-        </div>
+            <div class="display rounded-2xl p-4 text-right mb-6">
+                <div id="res" class="text-cyan-400 text-3xl font-bold font-['Orbitron']">0</div>
+            </div>
 
-        <div class="grid grid-cols-4 gap-3 mt-8" id="key-grid"></div>
+            <div class="grid grid-cols-4 gap-3" id="key-grid"></div>
+        </div>
     </div>
 
     <div id="themeModal" class="modal">
-        <div class="bg-[#0f0f1a] border-2 border-cyan-900 rounded-3xl p-8 w-80 text-center">
-            <h2 class="text-xl font-bold text-cyan-400 mb-6 font-['Orbitron'] uppercase">Keyboard Themes</h2>
-            <button onclick="applyTheme('dark')" class="w-full mb-3 p-3 bg-gray-800 rounded-xl">Dark Mode (Free)</button>
-            <button id="premiumBtn" onclick="checkPremium()" class="w-full p-3 bg-white text-black font-bold rounded-xl opacity-50">White Hybrid (LOCKED)</button>
-            <a id="payLink" href="https://rzp.io/rzp/UJNDMxC" target="_blank" class="block mt-4 text-xs text-yellow-500 font-bold underline">Pay $1.00 to Unlock</a>
-            <button onclick="toggleModal()" class="mt-6 text-gray-400 text-sm">Close</button>
+        <div class="bg-[#0a0a14] border border-cyan-500 rounded-3xl p-6 w-80 text-center">
+            <h2 class="text-xl font-bold text-cyan-400 mb-4 font-['Orbitron']">PORTABLES & SOUNDS</h2>
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <button onclick="setTheme('black')" class="bg-gray-800 p-2 rounded text-xs">Black (Free)</button>
+                <button onclick="setTheme('indigo')" class="bg-indigo-900 p-2 rounded text-xs">Indigo (Free)</button>
+                <button onclick="checkPremium('white')" class="bg-white text-black p-2 rounded text-xs font-bold">White (Prem)</button>
+                <button onclick="checkPremium('pink')" class="bg-pink-500 p-2 rounded text-xs font-bold">Pink (Prem)</button>
+            </div>
+            <p class="text-[10px] text-gray-400 mb-2">SOUND PROFILE:</p>
+            <select id="soundSelect" class="bg-black text-cyan-400 text-xs p-2 rounded w-full border border-cyan-900">
+                <option value="click">Blue Switch (Free)</option>
+                <option value="thump">Brown Switch (Free)</option>
+                <option value="typewriter">Typewriter (Premium)</option>
+                <option value="creamy">Creamy Linear (Premium)</option>
+                <option value="heavy">Heavy Tactile (Premium)</option>
+                <option value="silent">Silent Red (Premium)</option>
+            </select>
+            <a href="https://rzp.io/rzp/UJNDMxC" target="_blank" class="block mt-4 text-[10px] text-yellow-500 underline">Get Premium Unlocks ($1.00)</a>
+            <button onclick="toggleModal()" class="mt-4 text-gray-500 text-xs">Close</button>
         </div>
     </div>
 
     <script>
         let isMuted = false;
         let isLoggedIn = false;
-        const PAYMENT_URL = "https://rzp.io/rzp/UJNDMxC";
-
-        // --- 🎧 MECHANICAL SOUND ENGINE ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // --- 🎧 6-TYPE SOUND ENGINE ---
         function playMechSound() {
             if (isMuted) return;
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        }
+            
+            const type = document.getElementById('soundSelect').value;
+            const isPremiumSound = ['typewriter', 'creamy', 'heavy', 'silent'].includes(type);
+            
+            if (isPremiumSound && localStorage.getItem('isPremiumUser') !== 'true') {
+                // Fallback to free sound if trying to use premium without paying
+                playTone(150, 0.1, 'square');
+                return;
+            }
 
-        function handleLogin() {
-            isLoggedIn = true;
-            document.getElementById('loginBtn').innerText = "👤 LOGGED IN";
-            document.getElementById('loginBtn').classList.replace('bg-white', 'bg-green-600');
-            document.getElementById('loginBtn').classList.add('text-white');
-            updatePaidStatus();
-        }
-
-        function updatePaidStatus() {
-            const isPaid = localStorage.getItem('isPremiumUser') === 'true';
-            if (isPaid && isLoggedIn) {
-                document.getElementById('premiumBtn').innerText = "White Hybrid (UNLOCKED)";
-                document.getElementById('premiumBtn').classList.remove('opacity-50');
-                document.getElementById('payLink').classList.add('hidden');
+            switch(type) {
+                case 'click': playTone(400, 0.05, 'square'); break;
+                case 'thump': playTone(100, 0.15, 'sine'); break;
+                case 'typewriter': playTone(600, 0.03, 'sawtooth'); break;
+                case 'creamy': playTone(200, 0.2, 'triangle'); break;
+                case 'heavy': playTone(80, 0.25, 'square'); break;
+                case 'silent': playTone(120, 0.02, 'sine'); break;
             }
         }
 
-        const keys = ['C', '÷', '×', '⌫', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'];
-        const grid = document.getElementById('key-grid');
-        let expr = "";
+        function playTone(freq, dur, wave) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = wave;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
+        }
 
+        // --- 🔐 LOGIN & GOOGLE IDENTITY ---
+        function handleLogin() {
+            google.accounts.id.initialize({
+                client_id: "PASTE_YOUR_GOOGLE_CLIENT_ID_HERE", // Get from Google Cloud Console
+                callback: (res) => {
+                    const user = JSON.parse(atob(res.credential.split('.')[1]));
+                    isLoggedIn = true;
+                    document.getElementById('loginBtn').innerText = "👤 " + user.given_name;
+                    localStorage.setItem('userEmail', user.email);
+                }
+            });
+            google.accounts.id.prompt();
+        }
+
+        // --- 🎨 THEME & RGB ENGINE ---
+        function setTheme(t) {
+            if (t === 'black') { document.documentElement.style.setProperty('--bg-primary', '#0f0f1a'); document.documentElement.style.setProperty('--key-text', '#00ffff'); }
+            if (t === 'indigo') { document.documentElement.style.setProperty('--bg-primary', '#1e1b4b'); document.documentElement.style.setProperty('--key-text', '#818cf8'); }
+            if (t === 'white') { document.documentElement.style.setProperty('--bg-primary', '#ffffff'); document.documentElement.style.setProperty('--key-text', '#1a1a1a'); }
+            if (t === 'pink') { document.documentElement.style.setProperty('--bg-primary', '#fbcfe8'); document.documentElement.style.setProperty('--key-text', '#db2777'); }
+        }
+
+        function checkPremium(t) {
+            if (localStorage.getItem('isPremiumUser') === 'true') { setTheme(t); } 
+            else { window.open("https://rzp.io/rzp/UJNDMxC", "_blank"); }
+        }
+
+        // --- 🔢 CALC LOGIC + SECRET CODE ---
+        let expr = "";
+        const keys = ['C', '÷', '×', '⌫', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'];
         keys.forEach(k => {
             const btn = document.createElement('button');
-            btn.className = `key rounded-2xl h-14 font-bold text-lg ${k === '0' ? 'col-span-2' : ''} ${k === '=' ? 'bg-cyan-500 text-black' : ''}`;
+            btn.className = `key rounded-xl h-14 font-bold ${k === '0' ? 'col-span-2' : ''} ${k === '=' ? 'bg-cyan-500 text-black' : ''}`;
             btn.innerText = k;
             btn.onclick = () => { playMechSound(); handleInput(k); };
-            grid.appendChild(btn);
+            document.getElementById('key-grid').appendChild(btn);
         });
 
         function handleInput(k) {
@@ -108,6 +169,10 @@
             if (k === 'C') expr = ""; 
             else if (k === '⌫') expr = expr.slice(0, -1);
             else if (k === '=') {
+                if (expr === "12345") { // SECRET CODE TO UNLOCK
+                    localStorage.setItem('isPremiumUser', 'true');
+                    alert("PREMIUM ACTIVATED!"); location.reload(); return;
+                }
                 try { expr = eval(expr.replace('×', '*').replace('÷', '/')).toString(); }
                 catch { expr = "Error"; }
             } else expr += k;
@@ -116,19 +181,7 @@
         }
 
         function toggleMute() { isMuted = !isMuted; document.getElementById('muteBtn').innerText = isMuted ? "🔇 OFF" : "🔊 ON"; }
-        function toggleModal() { document.getElementById('themeModal').classList.toggle('active'); updatePaidStatus(); }
-
-        function checkPremium() {
-            if (localStorage.getItem('isPremiumUser') === 'true' && isLoggedIn) {
-                document.documentElement.style.setProperty('--bg-primary', '#ffffff');
-                document.documentElement.style.setProperty('--key-text', '#333');
-            } else if (!isLoggedIn) {
-                alert("Please LOGIN first to identify your account!");
-            } else {
-                // UPDATED JS REDIRECT
-                window.open(PAYMENT_URL, "_blank");
-            }
-        }
+        function toggleModal() { document.getElementById('themeModal').classList.toggle('active'); }
 
         if (window.location.search.includes('status=success')) {
             localStorage.setItem('isPremiumUser', 'true');
